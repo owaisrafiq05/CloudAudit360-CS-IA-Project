@@ -1,0 +1,205 @@
+{
+  "assets": [
+    {
+      "arn": "arn:aws:iam::123456789012:root",
+      "type": "iam-root",
+      "service": "iam",
+      "name": "root",
+      "region": "global",
+      "criticality": 3,
+      "exposure": "internal",
+      "owner": "security"
+    },
+    {
+      "arn": "arn:aws:iam::123456789012:user/demo-admin",
+      "type": "iam-user",
+      "service": "iam",
+      "name": "demo-admin",
+      "region": "global",
+      "criticality": 3,
+      "exposure": "internal",
+      "owner": "ops"
+    },
+    {
+      "arn": "arn:aws:s3:::ca360-vuln-public-data",
+      "type": "s3-bucket",
+      "service": "s3",
+      "name": "ca360-vuln-public-data",
+      "region": "us-east-1",
+      "criticality": 2,
+      "exposure": "public",
+      "owner": "data"
+    },
+    {
+      "arn": "arn:aws:ec2:us-east-1:123456789012:security-group/sg-vuln001",
+      "type": "security-group",
+      "service": "ec2",
+      "name": "vuln-open-sg",
+      "region": "us-east-1",
+      "criticality": 2,
+      "exposure": "public",
+      "owner": "network"
+    },
+    {
+      "arn": "arn:aws:rds:us-east-1:123456789012:db:ca360-vuln-db",
+      "type": "rds-instance",
+      "service": "rds",
+      "name": "ca360-vuln-db",
+      "region": "us-east-1",
+      "criticality": 3,
+      "exposure": "public",
+      "owner": "dba"
+    },
+    {
+      "arn": "arn:aws:kms:us-east-1:123456789012:key/vuln-key-1",
+      "type": "kms-key",
+      "service": "kms",
+      "name": "vuln-cmk",
+      "region": "us-east-1",
+      "criticality": 2,
+      "exposure": "private",
+      "owner": "security"
+    }
+  ],
+  "snapshots": [
+    {
+      "service": "iam",
+      "resource_id": "account",
+      "config": {
+        "AccountSummary": {
+          "AccountMFAEnabled": 0,
+          "AccountAccessKeysPresent": 1,
+          "Users": 1
+        },
+        "PasswordPolicy": {
+          "MinimumPasswordLength": 8,
+          "RequireSymbols": false,
+          "RequireNumbers": true,
+          "RequireUppercaseCharacters": true,
+          "RequireLowercaseCharacters": true
+        },
+        "Users": [
+          {
+            "UserName": "demo-admin",
+            "Arn": "arn:aws:iam::123456789012:user/demo-admin",
+            "CreateDate": "2024-01-01T00:00:00Z",
+            "MFADevices": [],
+            "AccessKeys": [
+              {
+                "AccessKeyId": "AKIAVULNOLDKEY01",
+                "Status": "Active",
+                "CreateDate": "2023-01-01T00:00:00Z",
+                "LastUsed": {"Region": "us-east-1", "ServiceName": "s3"}
+              }
+            ],
+            "AttachedPolicies": [
+              {"PolicyName": "AdministratorAccess", "PolicyArn": "arn:aws:iam::aws:policy/AdministratorAccess"}
+            ]
+          }
+        ],
+        "Root": {
+          "MFAEnabled": false,
+          "AccessKeysPresent": true,
+          "AccessKeys": [{"present": true}]
+        },
+        "WildcardAdminPolicies": [
+          {
+            "PolicyName": "AdminWildcard",
+            "Document": {"Statement": [{"Effect": "Allow", "Action": "*", "Resource": "*"}]}
+          }
+        ]
+      }
+    },
+    {
+      "service": "s3",
+      "resource_id": "ca360-vuln-public-data",
+      "config": {
+        "Name": "ca360-vuln-public-data",
+        "PublicAccessBlock": {
+          "BlockPublicAcls": false,
+          "IgnorePublicAcls": false,
+          "BlockPublicPolicy": false,
+          "RestrictPublicBuckets": false
+        },
+        "Encryption": {},
+        "Versioning": {"Status": "Suspended"},
+        "Logging": null,
+        "Policy": null,
+        "ACL": {"Grants": [{"Grantee": {"Type": "Group", "URI": "http://acs.amazonaws.com/groups/global/AllUsers"}, "Permission": "READ"}]}
+      }
+    },
+    {
+      "service": "ec2",
+      "resource_id": "sg-vuln001",
+      "config": {
+        "SecurityGroup": {
+          "GroupId": "sg-vuln001",
+          "GroupName": "vuln-open-sg",
+          "OwnerId": "123456789012",
+          "IpPermissions": [
+            {"IpProtocol": "tcp", "FromPort": 22, "ToPort": 22, "IpRanges": [{"CidrIp": "0.0.0.0/0"}]},
+            {"IpProtocol": "tcp", "FromPort": 3389, "ToPort": 3389, "IpRanges": [{"CidrIp": "0.0.0.0/0"}]},
+            {"IpProtocol": "-1", "IpRanges": [{"CidrIp": "0.0.0.0/0"}]}
+          ]
+        }
+      }
+    },
+    {
+      "service": "ec2",
+      "resource_id": "vpc-flow-logs",
+      "config": {"FlowLogs": []}
+    },
+    {
+      "service": "ec2",
+      "resource_id": "ebs-default-encryption",
+      "config": {"EbsEncryptionByDefault": false}
+    },
+    {
+      "service": "ec2",
+      "resource_id": "ebs-volumes",
+      "config": {
+        "Volumes": [
+          {"VolumeId": "vol-vuln1", "Encrypted": false, "Size": 8}
+        ]
+      }
+    },
+    {
+      "service": "cloudtrail",
+      "resource_id": "trails",
+      "config": {"Trails": []}
+    },
+    {
+      "service": "guardduty",
+      "resource_id": "detectors",
+      "config": {"DetectorIds": []}
+    },
+    {
+      "service": "kms",
+      "resource_id": "keys",
+      "config": {
+        "Keys": [
+          {
+            "KeyId": "vuln-key-1",
+            "Arn": "arn:aws:kms:us-east-1:123456789012:key/vuln-key-1",
+            "KeyManager": "CUSTOMER",
+            "KeyState": "Enabled",
+            "KeyRotationEnabled": false
+          }
+        ]
+      }
+    },
+    {
+      "service": "rds",
+      "resource_id": "ca360-vuln-db",
+      "config": {
+        "DBInstance": {
+          "DBInstanceIdentifier": "ca360-vuln-db",
+          "DBInstanceArn": "arn:aws:rds:us-east-1:123456789012:db:ca360-vuln-db",
+          "StorageEncrypted": false,
+          "PubliclyAccessible": true,
+          "BackupRetentionPeriod": 0
+        }
+      }
+    }
+  ]
+}
