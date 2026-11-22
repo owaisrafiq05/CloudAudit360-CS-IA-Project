@@ -1,0 +1,77 @@
+policies:
+  - name: Multi-Factor Authentication Required
+    statement: >
+      All interactive users and the root account must use multi-factor authentication (MFA)
+      for console and privileged access.
+    linked_controls:
+      - {framework: ISO27001, ref: A.8.5}
+      - {framework: NIST, ref: IA-2}
+      - {framework: CIS, ref: "1.5"}
+      - {framework: CIS, ref: "1.10"}
+
+  - name: Encryption at Rest
+    statement: >
+      All data stores including S3, EBS, and RDS must encrypt data at rest using AWS-managed
+      or customer-managed KMS keys.
+    linked_controls:
+      - {framework: ISO27001, ref: A.8.24}
+      - {framework: NIST, ref: SC-28}
+      - {framework: CIS, ref: "2.1.1"}
+      - {framework: CIS, ref: "2.2.1"}
+      - {framework: CIS, ref: "2.3.1"}
+
+  - name: Encryption in Transit
+    statement: >
+      Data in transit to object storage must be protected with TLS; bucket policies must deny
+      plaintext HTTP requests.
+    linked_controls:
+      - {framework: NIST, ref: SC-8}
+      - {framework: CIS, ref: "2.1.2"}
+
+  - name: Least Privilege Access
+    statement: >
+      Privileged and wildcard administrative policies must not be broadly attached; access keys
+      for root must not exist; access is granted on least privilege.
+    linked_controls:
+      - {framework: ISO27001, ref: A.8.2}
+      - {framework: NIST, ref: AC-6}
+      - {framework: CIS, ref: "1.4"}
+      - {framework: CIS, ref: "1.16"}
+
+  - name: Logging and Monitoring Enabled
+    statement: >
+      CloudTrail multi-region logging with log validation, VPC Flow Logs, and GuardDuty must
+      be enabled for security monitoring.
+    linked_controls:
+      - {framework: ISO27001, ref: A.8.15}
+      - {framework: ISO27001, ref: A.8.16}
+      - {framework: NIST, ref: AU-2}
+      - {framework: CIS, ref: "3.1"}
+
+  - name: Network Boundary Protection
+    statement: >
+      Security groups must not permit unrestricted inbound access from the Internet to
+      administrative ports (SSH/RDP) or all traffic.
+    linked_controls:
+      - {framework: ISO27001, ref: A.8.20}
+      - {framework: NIST, ref: SC-7}
+      - {framework: CIS, ref: "5.2"}
+
+  - name: Credential Lifecycle Management
+    statement: >
+      Password policies must enforce strong complexity and length; access keys must be rotated
+      at least every 90 days.
+    linked_controls:
+      - {framework: ISO27001, ref: A.5.17}
+      - {framework: NIST, ref: IA-5}
+      - {framework: CIS, ref: "1.8"}
+      - {framework: CIS, ref: "1.14"}
+
+  - name: Public Access Restriction
+    statement: >
+      S3 buckets and other internet-facing resources must use Block Public Access and
+      approved access control policies.
+    linked_controls:
+      - {framework: ISO27001, ref: A.8.3}
+      - {framework: NIST, ref: AC-3}
+      - {framework: CIS, ref: "2.1.4"}

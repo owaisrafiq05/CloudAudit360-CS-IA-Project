@@ -1,0 +1,36 @@
+severity_values:
+  low: 1
+  medium: 2
+  high: 4
+  critical: 5
+
+criticality_values:
+  1: 1
+  2: 3
+  3: 5
+
+exposure_likelihood:
+  public: 5
+  internal: 3
+  private: 2
+
+# +1 (capped at 5) when severity is critical or high
+high_severity_likelihood_bump: true
+high_severity_levels:
+  - high
+  - critical
+
+rating_bands:
+  - {min: 1, max: 4, rating: Low}
+  - {min: 5, max: 9, rating: Medium}
+  - {min: 10, max: 16, rating: High}
+  - {min: 17, max: 25, rating: Critical}
+
+password_policy:
+  min_length: 14
+  require_uppercase: true
+  require_lowercase: true
+  require_numbers: true
+  require_symbols: true
+
+access_key_max_age_days: 90

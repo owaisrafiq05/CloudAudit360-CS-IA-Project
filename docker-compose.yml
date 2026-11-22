@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: cloudaudit
+      POSTGRES_PASSWORD: cloudaudit
+      POSTGRES_DB: cloudaudit360
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cloudaudit -d cloudaudit360"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg2://cloudaudit:cloudaudit@db:5432/cloudaudit360
+      SECRET_KEY: docker-dev-secret-change-in-prod
+      DEMO_MODE: "true"
+      AWS_REGION: us-east-1
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: admin123
+    volumes:
+      - ./:/app
+      - evidence_data:/app/evidence
+      - report_output:/app/reports/output
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "python -m app.cli seed &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+volumes:
+  pgdata:
+  evidence_data:
+  report_output:

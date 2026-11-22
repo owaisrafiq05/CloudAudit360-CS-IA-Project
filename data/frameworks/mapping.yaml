@@ -1,0 +1,102 @@
+# check_id -> framework control references
+iam_root_mfa_enabled:
+  - {framework: ISO27001, ref: A.8.5}
+  - {framework: NIST, ref: IA-2}
+  - {framework: CIS, ref: "1.5"}
+
+iam_root_no_access_keys:
+  - {framework: ISO27001, ref: A.8.2}
+  - {framework: NIST, ref: AC-6}
+  - {framework: CIS, ref: "1.4"}
+
+iam_user_mfa_enabled:
+  - {framework: ISO27001, ref: A.8.5}
+  - {framework: NIST, ref: IA-2}
+  - {framework: CIS, ref: "1.10"}
+
+iam_password_policy_strong:
+  - {framework: ISO27001, ref: A.5.17}
+  - {framework: NIST, ref: IA-5}
+  - {framework: CIS, ref: "1.8"}
+
+iam_access_key_rotated_90d:
+  - {framework: ISO27001, ref: A.5.17}
+  - {framework: NIST, ref: IA-5}
+  - {framework: CIS, ref: "1.14"}
+
+iam_no_wildcard_admin_policy:
+  - {framework: ISO27001, ref: A.8.2}
+  - {framework: ISO27001, ref: A.5.15}
+  - {framework: NIST, ref: AC-6}
+  - {framework: CIS, ref: "1.16"}
+
+s3_public_access_blocked:
+  - {framework: ISO27001, ref: A.8.3}
+  - {framework: NIST, ref: AC-3}
+  - {framework: CIS, ref: "2.1.4"}
+
+s3_encryption_enabled:
+  - {framework: ISO27001, ref: A.8.24}
+  - {framework: NIST, ref: SC-28}
+  - {framework: CIS, ref: "2.1.1"}
+
+s3_tls_only_policy:
+  - {framework: ISO27001, ref: A.8.24}
+  - {framework: NIST, ref: SC-8}
+  - {framework: CIS, ref: "2.1.2"}
+
+s3_versioning_enabled:
+  - {framework: ISO27001, ref: A.8.13}
+  - {framework: NIST, ref: CP-9}
+
+sg_no_ssh_open_world:
+  - {framework: ISO27001, ref: A.8.20}
+  - {framework: ISO27001, ref: A.8.22}
+  - {framework: NIST, ref: SC-7}
+  - {framework: CIS, ref: "5.2"}
+
+sg_no_rdp_open_world:
+  - {framework: ISO27001, ref: A.8.20}
+  - {framework: ISO27001, ref: A.8.22}
+  - {framework: NIST, ref: SC-7}
+  - {framework: CIS, ref: "5.2"}
+
+sg_no_all_traffic_open_world:
+  - {framework: ISO27001, ref: A.8.20}
+  - {framework: NIST, ref: SC-7}
+  - {framework: CIS, ref: "5.2"}
+
+vpc_flow_logs_enabled:
+  - {framework: ISO27001, ref: A.8.15}
+  - {framework: ISO27001, ref: A.8.16}
+  - {framework: NIST, ref: AU-12}
+  - {framework: CIS, ref: "3.9"}
+
+cloudtrail_enabled_multiregion:
+  - {framework: ISO27001, ref: A.8.15}
+  - {framework: NIST, ref: AU-2}
+  - {framework: CIS, ref: "3.1"}
+
+cloudtrail_log_validation:
+  - {framework: ISO27001, ref: A.8.15}
+  - {framework: NIST, ref: AU-9}
+  - {framework: CIS, ref: "3.2"}
+
+guardduty_enabled:
+  - {framework: ISO27001, ref: A.8.16}
+  - {framework: NIST, ref: SI-4}
+
+ebs_default_encryption:
+  - {framework: ISO27001, ref: A.8.24}
+  - {framework: NIST, ref: SC-28}
+  - {framework: CIS, ref: "2.2.1"}
+
+rds_encrypted:
+  - {framework: ISO27001, ref: A.8.24}
+  - {framework: NIST, ref: SC-28}
+  - {framework: CIS, ref: "2.3.1"}
+
+kms_key_rotation_enabled:
+  - {framework: ISO27001, ref: A.8.24}
+  - {framework: NIST, ref: SC-12}
+  - {framework: CIS, ref: "3.6"}

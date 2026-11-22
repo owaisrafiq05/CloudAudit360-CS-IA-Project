@@ -1,0 +1,167 @@
+# Control catalogue — ISO/IEC 27001:2022 Annex A, NIST CSF/SP 800-53, CIS AWS Foundations
+controls:
+  # ISO/IEC 27001:2022 Annex A
+  - framework: ISO27001
+    control_ref: A.5.15
+    title: Access control
+    description: Rules to control physical and logical access to information and other associated assets.
+  - framework: ISO27001
+    control_ref: A.5.17
+    title: Authentication information
+    description: Allocation and management of authentication information shall be controlled.
+  - framework: ISO27001
+    control_ref: A.8.2
+    title: Privileged access rights
+    description: The allocation and use of privileged access rights shall be restricted and managed.
+  - framework: ISO27001
+    control_ref: A.8.3
+    title: Information access restriction
+    description: Access to information and other associated assets shall be restricted in accordance with the access control policy.
+  - framework: ISO27001
+    control_ref: A.8.5
+    title: Secure authentication
+    description: Secure authentication technologies and procedures shall be implemented.
+  - framework: ISO27001
+    control_ref: A.8.13
+    title: Information backup
+    description: Backup copies of information, software and systems shall be maintained and regularly tested.
+  - framework: ISO27001
+    control_ref: A.8.15
+    title: Logging
+    description: Logs that record activities, exceptions, faults and other relevant events shall be produced, stored, protected and analysed.
+  - framework: ISO27001
+    control_ref: A.8.16
+    title: Monitoring activities
+    description: Networks, systems and applications shall be monitored for anomalous behaviour.
+  - framework: ISO27001
+    control_ref: A.8.20
+    title: Networks security
+    description: Networks and network devices shall be secured, managed and controlled.
+  - framework: ISO27001
+    control_ref: A.8.22
+    title: Segregation of networks
+    description: Groups of information services, users and information systems shall be segregated in networks.
+  - framework: ISO27001
+    control_ref: A.8.24
+    title: Use of cryptography
+    description: Rules for the effective use of cryptography shall be defined and implemented.
+
+  # NIST SP 800-53 / CSF-aligned refs
+  - framework: NIST
+    control_ref: IA-2
+    title: Identification and Authentication (Organizational Users)
+    description: Uniquely identify and authenticate organizational users.
+  - framework: NIST
+    control_ref: IA-5
+    title: Authenticator Management
+    description: Manage system authenticators.
+  - framework: NIST
+    control_ref: AC-3
+    title: Access Enforcement
+    description: Enforce approved authorizations for logical access.
+  - framework: NIST
+    control_ref: AC-6
+    title: Least Privilege
+    description: Employ the principle of least privilege.
+  - framework: NIST
+    control_ref: AU-2
+    title: Event Logging
+    description: Identify the types of events that the system will log.
+  - framework: NIST
+    control_ref: AU-9
+    title: Protection of Audit Information
+    description: Protect audit information and audit logging tools.
+  - framework: NIST
+    control_ref: AU-12
+    title: Audit Record Generation
+    description: Provide audit record generation capability.
+  - framework: NIST
+    control_ref: SC-7
+    title: Boundary Protection
+    description: Monitor and control communications at external and key internal boundaries.
+  - framework: NIST
+    control_ref: SC-8
+    title: Transmission Confidentiality and Integrity
+    description: Protect the confidentiality and integrity of transmitted information.
+  - framework: NIST
+    control_ref: SC-12
+    title: Cryptographic Key Establishment and Management
+    description: Establish and manage cryptographic keys.
+  - framework: NIST
+    control_ref: SC-28
+    title: Protection of Information at Rest
+    description: Protect the confidentiality and integrity of information at rest.
+  - framework: NIST
+    control_ref: SI-4
+    title: System Monitoring
+    description: Monitor the system to detect attacks and indicators of potential attacks.
+  - framework: NIST
+    control_ref: CP-9
+    title: System Backup
+    description: Conduct backups of user-level and system-level information.
+
+  # CIS AWS Foundations Benchmark v3.0.0 (subset)
+  - framework: CIS
+    control_ref: "1.4"
+    title: Ensure no root user account access key exists
+    description: The root user account is the most privileged user. Access keys for root should not exist.
+  - framework: CIS
+    control_ref: "1.5"
+    title: Ensure MFA is enabled for the root user account
+    description: Multi-factor authentication adds an extra layer of protection on top of username and password.
+  - framework: CIS
+    control_ref: "1.8"
+    title: Ensure IAM password policy requires minimum length of 14 or greater
+    description: Password policies enforce strong authentication practices.
+  - framework: CIS
+    control_ref: "1.10"
+    title: Ensure multi-factor authentication (MFA) is enabled for all IAM users with a console password
+    description: MFA for IAM users reduces account takeover risk.
+  - framework: CIS
+    control_ref: "1.14"
+    title: Ensure access keys are rotated every 90 days or less
+    description: Rotating access keys reduces the window of compromised credentials.
+  - framework: CIS
+    control_ref: "1.16"
+    title: Ensure IAM policies that allow full '*:*' administrative privileges are not attached
+    description: IAM policies should not grant full administrative privileges.
+  - framework: CIS
+    control_ref: "2.1.1"
+    title: Ensure S3 Bucket Policy is set to deny HTTP requests
+    description: Encryption/TLS related S3 control (paired with encryption checks).
+  - framework: CIS
+    control_ref: "2.1.2"
+    title: Ensure S3 Bucket Policy denies HTTP (TLS-only)
+    description: S3 buckets should require encryption in transit (TLS).
+  - framework: CIS
+    control_ref: "2.1.4"
+    title: Ensure S3 Buckets are configured with Block Public Access
+    description: Block Public Access settings prevent accidental public exposure.
+  - framework: CIS
+    control_ref: "2.2.1"
+    title: Ensure EBS volume encryption is enabled
+    description: EBS default encryption should be enabled.
+  - framework: CIS
+    control_ref: "2.3.1"
+    title: Ensure that encryption is enabled for RDS Instances
+    description: RDS instances should be encrypted at rest.
+  - framework: CIS
+    control_ref: "3.1"
+    title: Ensure CloudTrail is enabled in all regions
+    description: Multi-region CloudTrail provides comprehensive API logging.
+  - framework: CIS
+    control_ref: "3.2"
+    title: Ensure CloudTrail log file validation is enabled
+    description: Log file validation provides integrity checking of CloudTrail logs.
+  - framework: CIS
+    control_ref: "3.6"
+    title: Ensure rotation for customer-created CMKs is enabled
+    description: Automatic key rotation should be enabled for CMKs.
+  - framework: CIS
+    control_ref: "3.9"
+    title: Ensure VPC flow logging is enabled in all VPCs
+    description: VPC Flow Logs provide visibility into network traffic.
+  - framework: CIS
+    control_ref: "5.2"
+    title: Ensure no security groups allow ingress from 0.0.0.0/0 to remote admin ports
+    description: Security groups should not allow unrestricted access to SSH/RDP.
