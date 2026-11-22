@@ -1,7 +1,15 @@
 {% extends "base.html" %}
 {% block title %}Risk Register — CloudAudit360{% endblock %}
 {% block content %}
-<h1 class="text-2xl font-semibold mb-4">Risk Register</h1>
+<div class="mb-4">
+  <p class="text-sea-600 text-sm font-medium mb-1">Information Assurance</p>
+  <h1 class="text-2xl font-semibold">Risk register</h1>
+  <p class="text-sm text-gray-400 mt-1">
+    Each problem becomes a risk with Likelihood × Impact. Assign an owner and treatment (fix / accept / transfer / avoid).
+    After the hardened scan, many should show as <strong>mitigated</strong>.
+  </p>
+</div>
+
 <form method="get" class="card p-4 mb-4 grid md:grid-cols-4 gap-3 text-sm">
   <div>
     <label class="text-xs text-gray-400">Rating</label>

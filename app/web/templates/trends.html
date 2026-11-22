@@ -1,16 +1,21 @@
 {% extends "base.html" %}
 {% block title %}Trends — CloudAudit360{% endblock %}
 {% block content %}
-<h1 class="text-2xl font-semibold mb-1">Trends</h1>
-<p class="text-sm text-gray-400 mb-6">Compliance scores and open-risk proxy across scans (vulnerable baseline → hardened).</p>
+<div class="mb-6">
+  <p class="text-sea-600 text-sm font-medium mb-1">Improvement story</p>
+  <h1 class="text-2xl font-semibold">Did security get better?</h1>
+  <p class="text-sm text-gray-400 mt-1">Compliance should rise and problems should fall from the weak lab to the hardened lab.</p>
+</div>
 
 <div class="grid lg:grid-cols-2 gap-4">
   <div class="card p-4">
-    <h2 class="font-medium mb-3">Framework compliance %</h2>
+    <h2 class="font-medium mb-1">Compliance score over time</h2>
+    <p class="text-xs text-gray-500 mb-3">Higher is better (target 100%).</p>
     <canvas id="complianceChart" height="220"></canvas>
   </div>
   <div class="card p-4">
-    <h2 class="font-medium mb-3">Open FAIL findings per scan</h2>
+    <h2 class="font-medium mb-1">Problems found per scan</h2>
+    <p class="text-xs text-gray-500 mb-3">Lower is better after hardening.</p>
     <canvas id="riskChart" height="220"></canvas>
   </div>
 </div>
@@ -25,7 +30,7 @@ new Chart(document.getElementById('complianceChart'), {
   data: {
     labels,
     datasets: [
-      { label: 'CIS', data: series.CIS, borderColor: '#14b8a6', tension: 0.2 },
+      { label: 'CIS', data: series.CIS, borderColor: '#34d399', tension: 0.2 },
       { label: 'ISO27001', data: series.ISO27001, borderColor: '#38bdf8', tension: 0.2 },
       { label: 'NIST', data: series.NIST, borderColor: '#fbbf24', tension: 0.2 },
     ]
@@ -42,7 +47,7 @@ new Chart(document.getElementById('riskChart'), {
   type: 'line',
   data: {
     labels,
-    datasets: [{ label: 'FAIL findings', data: openRisks, borderColor: '#f87171', backgroundColor: '#7f1d1d55', fill: true, tension: 0.2 }]
+    datasets: [{ label: 'Problems', data: openRisks, borderColor: '#f87171', backgroundColor: '#7f1d1d55', fill: true, tension: 0.2 }]
   },
   options: {
     scales: {

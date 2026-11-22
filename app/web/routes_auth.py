@@ -41,7 +41,7 @@ def login_submit(
     token = create_session_token(user.username, user.role)
     write_audit(db, user.username, "login", "user", user.id)
     db.commit()
-    resp = RedirectResponse("/dashboard", status_code=303)
+    resp = RedirectResponse("/demo", status_code=303)
     resp.set_cookie(
         SESSION_COOKIE,
         token,

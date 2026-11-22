@@ -17,6 +17,15 @@ router = APIRouter(tags=["overview"])
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 
 
+def _latest_env(db: Session, environment: str) -> Scan | None:
+    return (
+        db.query(Scan)
+        .filter(Scan.environment == environment, Scan.status == "completed")
+        .order_by(Scan.id.desc())
+        .first()
+    )
+
+
 @router.get("/dashboard")
 def dashboard(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
@@ -24,7 +33,12 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse("/login", status_code=303)
 
     latest = db.query(Scan).filter(Scan.status == "completed").order_by(Scan.id.desc()).first()
-    scores = framework_scores(db, latest.id) if latest else []
+    # Prefer showing health for hardened if available, else latest
+    hard = _latest_env(db, "hardened")
+    vuln = _latest_env(db, "vulnerable")
+    focus = hard or latest
+
+    scores = framework_scores(db, focus.id) if focus else []
     risks = (
         db.query(Risk)
         .filter(Risk.status.in_(["open", "in_progress", "accepted"]))
@@ -32,26 +46,68 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
         .limit(10)
         .all()
     )
+    if not risks:
+        # After remediation, show mitigated risks so the page is not empty for demos
+        risks = (
+            db.query(Risk)
+            .filter(Risk.status == "mitigated")
+            .order_by(Risk.inherent_score.desc())
+            .limit(10)
+            .all()
+        )
+
     rating_dist = Counter(
         r.rating
         for r in db.query(Risk).filter(Risk.status.in_(["open", "in_progress", "accepted"])).all()
     )
     findings_by_service: Counter = Counter()
-    if latest:
-        for f in db.query(Finding).filter(Finding.scan_id == latest.id, Finding.status == "FAIL").all():
-            service = f.check_id.split("_")[0]
-            findings_by_service[service] += 1
+    chart_scan = vuln or focus
+    if chart_scan:
+        for f in db.query(Finding).filter(
+            Finding.scan_id == chart_scan.id, Finding.status == "FAIL", Finding.source == "custom"
+        ).all():
+            area = {
+                "iam": "Identity",
+                "s3": "Storage",
+                "sg": "Network",
+                "vpc": "Network",
+                "cloudtrail": "Logging",
+                "guardduty": "Logging",
+                "ebs": "Encryption",
+                "rds": "Encryption",
+                "kms": "Encryption",
+            }
+            prefix = f.check_id.split("_")[0]
+            findings_by_service[area.get(prefix, prefix)] += 1
+
+    before_after = None
+    if vuln and hard:
+        vuln_scores = framework_scores(db, vuln.id)
+        hard_scores = framework_scores(db, hard.id)
+        before_after = {
+            "vuln_id": vuln.id,
+            "hard_id": hard.id,
+            "vuln_fails": db.query(Finding)
+            .filter(Finding.scan_id == vuln.id, Finding.status == "FAIL", Finding.source == "custom")
+            .count(),
+            "hard_fails": db.query(Finding)
+            .filter(Finding.scan_id == hard.id, Finding.status == "FAIL", Finding.source == "custom")
+            .count(),
+            "avg_vuln": int(round(sum(s.score for s in vuln_scores) / max(len(vuln_scores), 1))),
+            "avg_hard": int(round(sum(s.score for s in hard_scores) / max(len(hard_scores), 1))),
+        }
 
     return templates.TemplateResponse(
         "dashboard.html",
         {
             "request": request,
             "user": user,
-            "latest": latest,
+            "latest": focus,
             "scores": scores,
             "top_risks": risks,
             "rating_dist": dict(rating_dist),
             "findings_by_service": dict(findings_by_service),
+            "before_after": before_after,
         },
     )
 
@@ -72,43 +128,15 @@ def trends(request: Request, db: Session = Depends(get_db)):
     compliance_series: dict[str, list[float]] = {"CIS": [], "ISO27001": [], "NIST": []}
     open_risks = []
     for scan in scans:
-        labels.append(f"#{scan.id} {scan.environment}")
-        scores = {s.framework: s.score for s in framework_scores(db, scan.id)}
+        labels.append(f"{scan.environment.title()} #{scan.id}")
+        score_map = {s.framework: s.score for s in framework_scores(db, scan.id)}
         for fw in compliance_series:
-            compliance_series[fw].append(scores.get(fw, 0))
-        open_count = (
-            db.query(Risk)
-            .filter(
-                Risk.status.in_(["open", "in_progress"]),
-                Risk.last_seen_scan == scan.id,
-            )
+            compliance_series[fw].append(score_map.get(fw, 0))
+        still_open = (
+            db.query(Finding)
+            .filter(Finding.scan_id == scan.id, Finding.status == "FAIL", Finding.source == "custom")
             .count()
         )
-        # Better: count risks that were open as of this scan (first_seen <= scan and not mitigated before)
-        open_count = db.query(Risk).filter(
-            Risk.first_seen_scan <= scan.id,
-            Risk.status.in_(["open", "in_progress", "accepted", "mitigated", "closed"]),
-        ).count()
-        # For trend, show open+in_progress at time of scan using last_seen
-        still_open = 0
-        for r in db.query(Risk).all():
-            if r.first_seen_scan and r.first_seen_scan > scan.id:
-                continue
-            if r.status == "mitigated" and r.last_seen_scan and r.last_seen_scan <= scan.id:
-                # mitigated on or before this scan — check if last fail was before
-                if r.last_seen_scan == scan.id:
-                    # if last seen is this scan and mitigated, it was fixed this scan
-                    continue
-                if r.last_seen_scan < scan.id and r.status == "mitigated":
-                    continue
-            if r.status in ("open", "in_progress", "accepted"):
-                still_open += 1
-            elif r.status == "mitigated" and (not r.last_seen_scan or r.last_seen_scan > scan.id):
-                still_open += 1
-        # Simpler approach for demo: FAIL findings count as open-risk proxy
-        from app.models import Finding as F
-
-        still_open = db.query(F).filter(F.scan_id == scan.id, F.status == "FAIL", F.source == "custom").count()
         open_risks.append(still_open)
 
     return templates.TemplateResponse(

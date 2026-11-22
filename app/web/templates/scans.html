@@ -1,12 +1,15 @@
 {% extends "base.html" %}
 {% block title %}Scans — CloudAudit360{% endblock %}
 {% block content %}
-<div class="flex items-end justify-between mb-4 gap-4">
+<div class="flex flex-wrap items-end justify-between mb-4 gap-4">
   <div>
-    <h1 class="text-2xl font-semibold">Scans</h1>
-    <p class="text-sm text-gray-400">Trigger assessments and compare environments.</p>
+    <p class="text-sea-600 text-sm font-medium mb-1">Advanced</p>
+    <h1 class="text-2xl font-semibold">All scans</h1>
+    <p class="text-sm text-gray-400">Prefer the <a class="text-sea-600 hover:underline" href="/demo">Demo guide</a> for presentations. This page is for manual runs and comparisons.</p>
   </div>
+  <a href="/demo" class="rounded-md bg-sea-600 hover:bg-sea-500 px-4 py-2 text-sm font-medium cursor-pointer">Back to demo guide</a>
 </div>
+
 
 <div class="grid lg:grid-cols-2 gap-4 mb-6">
   <form method="post" action="/scans" class="card p-4 space-y-3 text-sm">

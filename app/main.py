@@ -60,7 +60,7 @@ def health():
 
 @app.get("/")
 def root():
-    return RedirectResponse("/dashboard")
+    return RedirectResponse("/demo")
 
 
 def _register_routers() -> None:
@@ -69,6 +69,7 @@ def _register_routers() -> None:
         routes_api,
         routes_auth,
         routes_controls,
+        routes_demo,
         routes_findings,
         routes_overview,
         routes_reports,
@@ -78,6 +79,7 @@ def _register_routers() -> None:
     )
 
     app.include_router(routes_auth.router)
+    app.include_router(routes_demo.router)
     app.include_router(routes_overview.router)
     app.include_router(routes_findings.router)
     app.include_router(routes_controls.router)
