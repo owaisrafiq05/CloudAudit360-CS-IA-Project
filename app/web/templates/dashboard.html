@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Overview — CloudAudit360{% endblock %}
+{% block content %}
+<div class="flex items-end justify-between mb-6 gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold">Security &amp; Compliance Overview</h1>
+    <p class="text-sm text-gray-400 mt-1">
+      {% if latest %}Latest scan #{{ latest.id }} · {{ latest.environment }} · {{ latest.status }} · {{ latest.label }}{% else %}No scans yet — run one from Scans.{% endif %}
+    </p>
+  </div>
+  <a href="/scans" class="rounded-md bg-sea-600 hover:bg-sea-500 px-4 py-2 text-sm font-medium">Run / view scans</a>
+</div>
+
+<div class="grid md:grid-cols-3 gap-4 mb-6">
+  {% for s in scores %}
+  <div class="card p-4">
+    <div class="text-xs uppercase tracking-wide text-gray-400">{{ s.framework }}</div>
+    <div class="mt-2 flex items-baseline gap-2">
+      <span class="text-3xl font-semibold text-sea-600">{{ '%.0f'|format(s.score) }}%</span>
+      <span class="text-xs text-gray-400">coverage {{ '%.0f'|format(s.coverage) }}%</span>
+    </div>
+    <div class="mt-3 h-2 rounded bg-ink-950 overflow-hidden">
+      <div class="h-full bg-sea-600" style="width: {{ s.score }}%"></div>
+    </div>
+    <div class="mt-2 text-xs text-gray-400">PASS {{ s.pass_count }} · FAIL {{ s.fail_count }} · EXC {{ s.exception_count }} · N/A {{ s.not_assessed }}</div>
+  </div>
+  {% else %}
+  <div class="card p-4 text-gray-400 text-sm">No compliance scores yet.</div>
+  {% endfor %}
+</div>
+
+<div class="grid lg:grid-cols-2 gap-4 mb-6">
+  <div class="card p-4">
+    <h2 class="font-medium mb-3">Risk rating distribution</h2>
+    <canvas id="ratingChart" height="180"></canvas>
+  </div>
+  <div class="card p-4">
+    <h2 class="font-medium mb-3">Findings by service (FAIL)</h2>
+    <canvas id="serviceChart" height="180"></canvas>
+  </div>
+</div>
+
+<div class="card p-4">
+  <h2 class="font-medium mb-3">Top 10 risks</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="text-left text-gray-400 border-b border-gray-800">
+        <tr>
+          <th class="py-2 pr-3">Rating</th>
+          <th class="py-2 pr-3">Score</th>
+          <th class="py-2 pr-3">Title</th>
+          <th class="py-2 pr-3">Treatment</th>
+          <th class="py-2">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in top_risks %}
+        <tr class="border-b border-gray-800/70 hover:bg-ink-800/40">
+          <td class="py-2 pr-3"><span class="badge-{{ r.rating|lower }} px-2 py-0.5 rounded text-xs">{{ r.rating }}</span></td>
+          <td class="py-2 pr-3 font-mono">{{ r.inherent_score }}</td>
+          <td class="py-2 pr-3"><a class="text-sea-600 hover:underline" href="/risks/{{ r.id }}">{{ r.title }}</a></td>
+          <td class="py-2 pr-3">{{ r.treatment }}</td>
+          <td class="py-2">{{ r.status }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="py-4 text-gray-500">No open risks.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const ratingLabels = {{ rating_dist.keys()|list|tojson }};
+const ratingValues = {{ rating_dist.values()|list|tojson }};
+const serviceLabels = {{ findings_by_service.keys()|list|tojson }};
+const serviceValues = {{ findings_by_service.values()|list|tojson }};
+const colors = ['#b91c1c','#c2410c','#a16207','#1d4ed8','#0f766e'];
+if (document.getElementById('ratingChart')) {
+  new Chart(document.getElementById('ratingChart'), {
+    type: 'doughnut',
+    data: { labels: ratingLabels, datasets: [{ data: ratingValues, backgroundColor: colors }] },
+    options: { plugins: { legend: { labels: { color: '#d1d5db' } } } }
+  });
+}
+if (document.getElementById('serviceChart')) {
+  new Chart(document.getElementById('serviceChart'), {
+    type: 'bar',
+    data: { labels: serviceLabels, datasets: [{ label: 'FAIL', data: serviceValues, backgroundColor: '#0d9488' }] },
+    options: {
+      scales: {
+        x: { ticks: { color: '#9ca3af' }, grid: { color: '#1f2937' } },
+        y: { ticks: { color: '#9ca3af' }, grid: { color: '#1f2937' }, beginAtZero: true }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+</script>
+{% endblock %}

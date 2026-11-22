@@ -54,10 +54,10 @@ def compute_impact(
 ) -> tuple[int, str]:
     cfg = cfg or load_risk_config()
     sev_val = cfg.get("severity_values", {}).get(severity, 2)
-    crit_val = cfg.get("criticality_values", {}).get(criticality) or cfg.get(
-        "criticality_values", {}
-    ).get(str(criticality), 3)
-    impact = round((sev_val + crit_val) / 2)
+    crit_map = cfg.get("criticality_values", {})
+    crit_val = crit_map.get(criticality, crit_map.get(str(criticality), 3))
+    # Half-up rounding so 4.5 -> 5 (avoids banker's round edge cases in demos)
+    impact = int(math.floor((sev_val + crit_val) / 2 + 0.5))
     impact = max(1, min(5, impact))
     reason = (
         f"severity={severity}({sev_val}) + criticality={criticality}({crit_val}) "

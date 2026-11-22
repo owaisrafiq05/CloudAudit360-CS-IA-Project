@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Scan {{ scan.id }} — CloudAudit360{% endblock %}
+{% block content %}
+<a href="/scans" class="text-sm text-gray-400 hover:text-sea-600">← Scans</a>
+<h1 class="text-2xl font-semibold mt-2">Scan #{{ scan.id }}</h1>
+<p class="text-sm text-gray-400 mb-4">{{ scan.environment }} · {{ scan.label }} · {{ scan.status }}</p>
+<div class="grid md:grid-cols-3 gap-4 mb-6">
+  <div class="card p-4"><div class="text-xs text-gray-400">FAIL</div><div class="text-2xl text-red-300">{{ fail }}</div></div>
+  <div class="card p-4"><div class="text-xs text-gray-400">PASS</div><div class="text-2xl text-sea-600">{{ pas }}</div></div>
+  <div class="card p-4"><div class="text-xs text-gray-400">Evidence items</div><div class="text-2xl">{{ evidence|length }}</div></div>
+</div>
+<div class="card p-4">
+  <h2 class="font-medium mb-3">Evidence index (SHA-256)</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full text-xs">
+      <thead class="text-gray-400 text-left border-b border-gray-800">
+        <tr><th class="p-2">ID</th><th class="p-2">Kind</th><th class="p-2">Path</th><th class="p-2">SHA-256</th></tr>
+      </thead>
+      <tbody>
+        {% for e in evidence %}
+        <tr class="border-b border-gray-800/60">
+          <td class="p-2">{{ e.id }}</td>
+          <td class="p-2">{{ e.kind }}</td>
+          <td class="p-2 font-mono">{{ e.path_or_json }}</td>
+          <td class="p-2 font-mono">{{ e.sha256 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

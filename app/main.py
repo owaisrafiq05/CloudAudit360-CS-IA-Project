@@ -4,10 +4,9 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 
 from app.config import EVIDENCE_DIR, REPORT_DIR, get_settings
 from app.db import SessionLocal, init_db
@@ -35,24 +34,33 @@ def _expire_exceptions_job() -> None:
 async def lifespan(app: FastAPI):
     EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    STATIC_DIR.mkdir(parents=True, exist_ok=True)
     init_db()
     db = SessionLocal()
     try:
         run_seed(db)
     finally:
         db.close()
-    scheduler.add_job(_expire_exceptions_job, "interval", hours=6, id="expire_exceptions")
-    scheduler.start()
+    if not scheduler.running:
+        scheduler.add_job(_expire_exceptions_job, "interval", hours=6, id="expire_exceptions")
+        scheduler.start()
     yield
-    scheduler.shutdown(wait=False)
+    if scheduler.running:
+        scheduler.shutdown(wait=False)
 
 
 app = FastAPI(title="CloudAudit360", version="1.0.0", lifespan=lifespan)
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-if STATIC_DIR.exists():
-    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+@app.get("/health")
+def health():
+    return {"status": "ok", "demo_mode": settings.demo_mode}
+
+
+@app.get("/")
+def root():
+    return RedirectResponse("/dashboard")
 
 
 def _register_routers() -> None:
@@ -81,19 +89,4 @@ def _register_routers() -> None:
     app.include_router(routes_api.router, prefix="/api")
 
 
-@app.get("/health")
-def health():
-    return {"status": "ok", "demo_mode": settings.demo_mode}
-
-
-@app.get("/")
-def root():
-    return RedirectResponse("/dashboard")
-
-
-# Routers registered after module load so package imports resolve
-try:
-    _register_routers()
-except ImportError:
-    # During early milestone installs, web routers may not exist yet
-    pass
+_register_routers()

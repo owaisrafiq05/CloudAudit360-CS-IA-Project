@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Finding {{ finding.id }} — CloudAudit360{% endblock %}
+{% block content %}
+<a href="/findings?scan={{ finding.scan_id }}" class="text-sm text-gray-400 hover:text-sea-600">← Back to findings</a>
+<h1 class="text-2xl font-semibold mt-2 mb-2">{{ finding.title }}</h1>
+<div class="flex flex-wrap gap-2 mb-4 text-sm">
+  <span class="badge-{{ finding.status|lower }} px-2 py-0.5 rounded">{{ finding.status }}</span>
+  <span class="badge-{{ finding.severity }} px-2 py-0.5 rounded">{{ finding.severity }}</span>
+  <span class="px-2 py-0.5 rounded bg-ink-800 text-gray-300">{{ finding.source }}</span>
+  <span class="px-2 py-0.5 rounded bg-ink-800 font-mono text-xs text-gray-300">{{ finding.check_id }}</span>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-4">
+  <div class="card p-4">
+    <h2 class="font-medium mb-2">Description</h2>
+    <p class="text-sm text-gray-300">{{ finding.description }}</p>
+    <h2 class="font-medium mt-4 mb-2">Remediation</h2>
+    <p class="text-sm text-gray-300">{{ finding.remediation or 'N/A' }}</p>
+  </div>
+  <div class="card p-4">
+    <h2 class="font-medium mb-2">Evidence</h2>
+    <pre class="text-xs font-mono bg-ink-950 rounded p-3 overflow-auto max-h-96 text-gray-300">{{ finding.evidence_json | tojson(indent=2) }}</pre>
+  </div>
+</div>
+{% endblock %}

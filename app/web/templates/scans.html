@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Scans — CloudAudit360{% endblock %}
+{% block content %}
+<div class="flex items-end justify-between mb-4 gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold">Scans</h1>
+    <p class="text-sm text-gray-400">Trigger assessments and compare environments.</p>
+  </div>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-4 mb-6">
+  <form method="post" action="/scans" class="card p-4 space-y-3 text-sm">
+    <h2 class="font-medium">Trigger scan</h2>
+    <div>
+      <label class="text-xs text-gray-400">Environment</label>
+      <select name="environment" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2">
+        <option value="vulnerable">vulnerable</option>
+        <option value="hardened">hardened</option>
+        <option value="other">other</option>
+      </select>
+    </div>
+    <div>
+      <label class="text-xs text-gray-400">Label</label>
+      <input name="label" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2" placeholder="optional" />
+    </div>
+    <button class="rounded bg-sea-600 hover:bg-sea-500 px-4 py-2 font-medium">Run scan</button>
+  </form>
+
+  <form method="get" action="/scans/compare" class="card p-4 space-y-3 text-sm">
+    <h2 class="font-medium">Compare scans</h2>
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="text-xs text-gray-400">Scan A (baseline)</label>
+        <select name="a" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2">
+          {% for s in scans %}<option value="{{ s.id }}" {% if a==s.id %}selected{% endif %}>#{{ s.id }} {{ s.environment }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-gray-400">Scan B</label>
+        <select name="b" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2">
+          {% for s in scans %}<option value="{{ s.id }}" {% if b==s.id %}selected{% endif %}>#{{ s.id }} {{ s.environment }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+    <button class="rounded bg-ink-700 hover:bg-ink-800 px-4 py-2">Compare</button>
+  </form>
+</div>
+
+<div class="card overflow-x-auto mb-6">
+  <table class="w-full text-sm">
+    <thead class="text-left text-gray-400 border-b border-gray-800">
+      <tr><th class="p-3">ID</th><th class="p-3">Env</th><th class="p-3">Label</th><th class="p-3">Status</th><th class="p-3">Started</th><th class="p-3">By</th></tr>
+    </thead>
+    <tbody>
+      {% for s in scans %}
+      <tr class="border-b border-gray-800/60">
+        <td class="p-3"><a class="text-sea-600 hover:underline" href="/scans/{{ s.id }}">#{{ s.id }}</a></td>
+        <td class="p-3">{{ s.environment }}</td>
+        <td class="p-3">{{ s.label }}</td>
+        <td class="p-3">{{ s.status }}</td>
+        <td class="p-3 text-xs">{{ s.started_at }}</td>
+        <td class="p-3">{{ s.triggered_by }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="p-4 text-gray-500">No scans yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if compare %}
+<div class="card p-4">
+  <h2 class="font-medium mb-3">Comparison #{{ compare.scan_a }} → #{{ compare.scan_b }}</h2>
+  <div class="grid md:grid-cols-3 gap-3 mb-4 text-sm">
+    {% for fw, d in compare.score_deltas.items() %}
+    <div class="border border-gray-800 rounded p-3">
+      <div class="text-gray-400 text-xs">{{ fw }}</div>
+      <div>{{ d.a }}% → {{ d.b }}% <span class="text-sea-600">({{ '%+.1f'|format(d.delta) }})</span></div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="grid lg:grid-cols-3 gap-4 text-sm">
+    <div>
+      <h3 class="font-medium text-sea-600 mb-2">Fixed ({{ compare.fixed|length }})</h3>
+      <ul class="space-y-1 text-xs font-mono">{% for i in compare.fixed %}<li>{{ i.check_id }}</li>{% else %}<li class="text-gray-500">None</li>{% endfor %}</ul>
+    </div>
+    <div>
+      <h3 class="font-medium text-red-300 mb-2">New ({{ compare.new|length }})</h3>
+      <ul class="space-y-1 text-xs font-mono">{% for i in compare.new %}<li>{{ i.check_id }}</li>{% else %}<li class="text-gray-500">None</li>{% endfor %}</ul>
+    </div>
+    <div>
+      <h3 class="font-medium text-gray-300 mb-2">Unchanged ({{ compare.unchanged|length }})</h3>
+      <ul class="space-y-1 text-xs font-mono max-h-48 overflow-auto">{% for i in compare.unchanged %}<li>{{ i.check_id }} ({{ i.status_b }})</li>{% else %}<li class="text-gray-500">None</li>{% endfor %}</ul>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

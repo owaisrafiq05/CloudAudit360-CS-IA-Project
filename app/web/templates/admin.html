@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Admin — CloudAudit360{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Admin</h1>
+<div class="grid lg:grid-cols-2 gap-4">
+  <div class="card p-4">
+    <h2 class="font-medium mb-3">Users</h2>
+    <table class="w-full text-sm">
+      <thead class="text-gray-400 text-left border-b border-gray-800"><tr><th class="p-2">ID</th><th class="p-2">Username</th><th class="p-2">Role</th></tr></thead>
+      <tbody>
+        {% for u in users %}
+        <tr class="border-b border-gray-800/60"><td class="p-2">{{ u.id }}</td><td class="p-2">{{ u.username }}</td><td class="p-2">{{ u.role }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card p-4">
+    <h2 class="font-medium mb-3">Audit log</h2>
+    <ul class="text-xs space-y-2 max-h-96 overflow-auto">
+      {% for l in logs %}
+      <li class="border-b border-gray-800/50 pb-1"><span class="text-gray-400">{{ l.ts }}</span> · {{ l.user }} · {{ l.action }} · {{ l.entity }} {{ l.entity_id }}</li>
+      {% else %}
+      <li class="text-gray-500">Empty</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

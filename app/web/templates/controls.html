@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Controls — CloudAudit360{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Controls &amp; Policies</h1>
+<form method="get" class="card p-4 mb-4 grid md:grid-cols-3 gap-3 text-sm">
+  <div>
+    <label class="text-xs text-gray-400">Framework</label>
+    <select name="framework" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2">
+      {% for fw in frameworks %}
+      <option value="{{ fw }}" {% if framework==fw %}selected{% endif %}>{{ fw }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="text-xs text-gray-400">Scan</label>
+    <select name="scan" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2">
+      {% for s in scans %}
+      <option value="{{ s.id }}" {% if scan_id==s.id %}selected{% endif %}>#{{ s.id }} {{ s.environment }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="flex items-end"><button class="w-full rounded bg-sea-600 hover:bg-sea-500 py-2">Apply</button></div>
+</form>
+
+<div class="grid lg:grid-cols-3 gap-4 mb-4">
+  {% for s in scores %}
+  <div class="card p-3 text-sm">
+    <div class="text-gray-400 text-xs">{{ s.framework }}</div>
+    <div class="text-2xl font-semibold text-sea-600">{{ '%.0f'|format(s.score) }}%</div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card overflow-x-auto mb-6">
+  <table class="w-full text-sm">
+    <thead class="text-left text-gray-400 border-b border-gray-800">
+      <tr><th class="p-3">Ref</th><th class="p-3">Title</th><th class="p-3">Status</th><th class="p-3">Failing</th></tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr class="border-b border-gray-800/60">
+        <td class="p-3 font-mono text-xs">{{ row.control.control_ref }}</td>
+        <td class="p-3">{{ row.control.title }}</td>
+        <td class="p-3"><span class="badge-{{ 'pass' if row.result.status=='PASS' else ('fail' if row.result.status=='FAIL' else 'medium') }} px-2 py-0.5 rounded text-xs">{{ row.result.status }}</span></td>
+        <td class="p-3">{{ row.result.failing_finding_count }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="p-4 text-gray-500">No control results.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-4 mb-6">
+  <div class="card p-4">
+    <h2 class="font-medium mb-2">Gap analysis — FAIL</h2>
+    <ul class="text-sm space-y-1 text-gray-300">
+      {% for c in gaps_fail %}<li class="font-mono text-xs">{{ c.control_ref }} — {{ c.title }}</li>
+      {% else %}<li class="text-gray-500">None</li>{% endfor %}
+    </ul>
+  </div>
+  <div class="card p-4">
+    <h2 class="font-medium mb-2">Gap analysis — NOT_ASSESSED</h2>
+    <ul class="text-sm space-y-1 text-gray-300">
+      {% for c in gaps_na %}<li class="font-mono text-xs">{{ c.control_ref }} — {{ c.title }}</li>
+      {% else %}<li class="text-gray-500">None</li>{% endfor %}
+    </ul>
+    {% if unmapped %}
+    <h3 class="font-medium mt-4 mb-1 text-sm">Unmapped scanner checks</h3>
+    <ul class="text-xs font-mono text-amber-200 space-y-1">
+      {% for u in unmapped %}<li>{{ u }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card p-4">
+  <h2 class="font-medium mb-3">Policy compliance</h2>
+  <div class="space-y-3">
+    {% for p in policies %}
+    <div class="border border-gray-800 rounded-lg p-3">
+      <div class="flex items-center justify-between gap-2">
+        <div class="font-medium">{{ p.name }}</div>
+        <span class="badge-{{ 'pass' if p.status=='PASS' else ('fail' if p.status=='FAIL' else 'medium') }} px-2 py-0.5 rounded text-xs">{{ p.status }}</span>
+      </div>
+      <p class="text-xs text-gray-400 mt-1">{{ p.statement }}</p>
+    </div>
+    {% else %}
+    <p class="text-sm text-gray-500">No policies.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

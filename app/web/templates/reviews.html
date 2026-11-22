@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Reviews & Exceptions — CloudAudit360{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Exceptions &amp; Reviews</h1>
+
+<div class="grid lg:grid-cols-2 gap-4 mb-6">
+  <div class="card p-4">
+    <h2 class="font-medium mb-3">Review tasks</h2>
+    <div class="space-y-3 text-sm">
+      {% for r in reviews %}
+      <div class="border border-gray-800 rounded p-3 {% if r.due_date and not r.completed_at and r.due_date < today %}border-red-700{% endif %}">
+        <div class="flex justify-between gap-2">
+          <div>
+            <div class="font-medium">{{ r.type }}</div>
+            <div class="text-xs text-gray-400">{{ r.target }} · due {{ r.due_date }}</div>
+            {% if r.completed_at %}<div class="text-xs text-sea-600 mt-1">Completed by {{ r.reviewer }}: {{ r.outcome }}</div>{% endif %}
+          </div>
+          {% if not r.completed_at %}
+          <form method="post" action="/reviews/{{ r.id }}/complete" class="flex flex-col gap-1 min-w-[180px]">
+            <input name="outcome" placeholder="keep / revoke / ok" required class="rounded bg-ink-950 border border-gray-700 px-2 py-1 text-xs" />
+            <input name="notes" placeholder="notes" class="rounded bg-ink-950 border border-gray-700 px-2 py-1 text-xs" />
+            <button class="rounded bg-sea-700 px-2 py-1 text-xs">Complete</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card p-4">
+    <h2 class="font-medium mb-3">Exceptions</h2>
+    <ul class="space-y-2 text-sm">
+      {% for e in exceptions %}
+      <li class="border border-gray-800 rounded p-3">
+        <div>#{{ e.id }} risk={{ e.risk_id }} · {{ e.status }}</div>
+        <div class="text-xs text-gray-400 mt-1">{{ e.justification }}</div>
+        <div class="text-xs text-gray-500">approved_by={{ e.approved_by or 'pending' }} expires={{ e.expires_at }}</div>
+      </li>
+      {% else %}
+      <li class="text-gray-500">No exceptions.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<div class="card p-4">
+  <h2 class="font-medium mb-3">Access review (latest IAM snapshot)</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="text-left text-gray-400 border-b border-gray-800">
+        <tr><th class="p-2">User</th><th class="p-2">MFA</th><th class="p-2">Keys</th><th class="p-2">Policies</th></tr>
+      </thead>
+      <tbody>
+        {% for u in access.users %}
+        <tr class="border-b border-gray-800/60">
+          <td class="p-2 font-mono text-xs">{{ u.username }}</td>
+          <td class="p-2">{{ 'yes' if u.mfa else 'NO' }}</td>
+          <td class="p-2 text-xs">{{ u.access_keys|length }}</td>
+          <td class="p-2 text-xs">{{ u.attached_policies|join(', ') }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="p-3 text-gray-500">No IAM snapshot.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

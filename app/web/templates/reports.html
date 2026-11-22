@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Reports — CloudAudit360{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Reports</h1>
+
+<form method="post" action="/reports" class="card p-4 mb-6 grid md:grid-cols-4 gap-3 text-sm">
+  <div>
+    <label class="text-xs text-gray-400">Scan</label>
+    <select name="scan_id" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2">
+      {% for s in scans %}<option value="{{ s.id }}">#{{ s.id }} {{ s.environment }}</option>{% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="text-xs text-gray-400">Type</label>
+    <select name="report_type" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2">
+      <option value="audit">audit</option>
+      <option value="technical">technical</option>
+    </select>
+  </div>
+  <div>
+    <label class="text-xs text-gray-400">Format</label>
+    <select name="fmt" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2">
+      <option value="html">html</option>
+      <option value="pdf">pdf</option>
+    </select>
+  </div>
+  <div class="flex items-end"><button class="w-full rounded bg-sea-600 hover:bg-sea-500 py-2 font-medium">Generate</button></div>
+</form>
+
+<div class="card overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead class="text-left text-gray-400 border-b border-gray-800">
+      <tr><th class="p-3">ID</th><th class="p-3">Scan</th><th class="p-3">Type</th><th class="p-3">Format</th><th class="p-3">Created</th><th class="p-3"></th></tr>
+    </thead>
+    <tbody>
+      {% for r in reports %}
+      <tr class="border-b border-gray-800/60">
+        <td class="p-3">{{ r.id }}</td>
+        <td class="p-3">#{{ r.scan_id }}</td>
+        <td class="p-3">{{ r.report_type }}</td>
+        <td class="p-3">{{ r.format }}</td>
+        <td class="p-3 text-xs">{{ r.created_at }}</td>
+        <td class="p-3"><a class="text-sea-600 hover:underline" href="/reports/{{ r.id }}/download">Download</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="p-4 text-gray-500">No reports yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

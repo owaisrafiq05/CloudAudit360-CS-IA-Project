@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Findings — CloudAudit360{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Findings</h1>
+<form class="card p-4 mb-4 grid md:grid-cols-5 gap-3 text-sm" method="get">
+  <div>
+    <label class="text-gray-400 text-xs">Scan</label>
+    <select name="scan" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2">
+      {% for s in scans %}
+      <option value="{{ s.id }}" {% if scan_id==s.id %}selected{% endif %}>#{{ s.id }} {{ s.environment }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="text-gray-400 text-xs">Severity</label>
+    <select name="severity" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2">
+      <option value="">All</option>
+      {% for sev in ['critical','high','medium','low'] %}
+      <option value="{{ sev }}" {% if severity==sev %}selected{% endif %}>{{ sev }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="text-gray-400 text-xs">Status</label>
+    <select name="status" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2">
+      <option value="">All</option>
+      {% for st in ['FAIL','PASS','ERROR'] %}
+      <option value="{{ st }}" {% if status==st %}selected{% endif %}>{{ st }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="text-gray-400 text-xs">Service prefix</label>
+    <input name="service" value="{{ service }}" placeholder="iam / s3 / sg" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2" />
+  </div>
+  <div class="flex items-end">
+    <button class="w-full rounded bg-sea-600 hover:bg-sea-500 py-2 font-medium">Filter</button>
+  </div>
+</form>
+
+<div class="card overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead class="text-left text-gray-400 border-b border-gray-800">
+      <tr>
+        <th class="p-3">Status</th>
+        <th class="p-3">Severity</th>
+        <th class="p-3">Check</th>
+        <th class="p-3">Title</th>
+        <th class="p-3">Source</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for f in findings %}
+      <tr class="border-b border-gray-800/60 hover:bg-ink-800/40">
+        <td class="p-3"><span class="badge-{{ f.status|lower }} px-2 py-0.5 rounded text-xs">{{ f.status }}</span></td>
+        <td class="p-3"><span class="badge-{{ f.severity }} px-2 py-0.5 rounded text-xs">{{ f.severity }}</span></td>
+        <td class="p-3 font-mono text-xs">{{ f.check_id }}</td>
+        <td class="p-3"><a class="text-sea-600 hover:underline" href="/findings/{{ f.id }}">{{ f.title }}</a></td>
+        <td class="p-3">{{ f.source }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="p-4 text-gray-500">No findings.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

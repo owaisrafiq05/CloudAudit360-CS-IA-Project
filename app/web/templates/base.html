@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}CloudAudit360{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['IBM Plex Sans', 'sans-serif'],
+            mono: ['IBM Plex Mono', 'monospace'],
+          },
+          colors: {
+            ink: { 950: '#0b1220', 900: '#111827', 800: '#1f2937', 700: '#374151' },
+            sea: { 500: '#0f766e', 600: '#0d9488', 700: '#115e59', 100: '#ccfbf1' },
+            alert: { critical: '#b91c1c', high: '#c2410c', medium: '#a16207', low: '#1d4ed8' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: radial-gradient(1200px 600px at 10% -10%, #134e4a33, transparent), radial-gradient(900px 500px at 100% 0%, #1e3a5f33, transparent), #0b1220; }
+    .card { background: rgba(17,24,39,0.85); border: 1px solid #374151; border-radius: 0.75rem; }
+    .badge-critical { background:#7f1d1d; color:#fecaca; }
+    .badge-high { background:#7c2d12; color:#fed7aa; }
+    .badge-medium { background:#713f12; color:#fde68a; }
+    .badge-low { background:#1e3a8a; color:#bfdbfe; }
+    .badge-pass { background:#064e3b; color:#a7f3d0; }
+    .badge-fail { background:#7f1d1d; color:#fecaca; }
+    .nav-link { color:#9ca3af; }
+    .nav-link:hover, .nav-link.active { color:#5eead4; }
+  </style>
+</head>
+<body class="font-sans text-gray-100 min-h-screen">
+  <header class="border-b border-gray-800 bg-ink-900/80 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+      <a href="/dashboard" class="flex items-center gap-2">
+        <span class="inline-flex h-8 w-8 items-center justify-center rounded bg-sea-600 text-white font-bold text-sm">CA</span>
+        <div>
+          <div class="font-semibold tracking-tight text-white">CloudAudit360</div>
+          <div class="text-[11px] text-gray-400 -mt-0.5">Cloud Security + Information Assurance</div>
+        </div>
+      </a>
+      {% if user %}
+      <nav class="hidden md:flex items-center gap-4 text-sm">
+        <a class="nav-link {% if request.url.path.startswith('/dashboard') %}active{% endif %}" href="/dashboard">Overview</a>
+        <a class="nav-link {% if request.url.path.startswith('/trends') %}active{% endif %}" href="/trends">Trends</a>
+        <a class="nav-link {% if request.url.path.startswith('/findings') %}active{% endif %}" href="/findings">Findings</a>
+        <a class="nav-link {% if request.url.path.startswith('/controls') %}active{% endif %}" href="/controls">Controls</a>
+        <a class="nav-link {% if request.url.path.startswith('/risks') %}active{% endif %}" href="/risks">Risks</a>
+        <a class="nav-link {% if request.url.path.startswith('/scans') %}active{% endif %}" href="/scans">Scans</a>
+        <a class="nav-link {% if request.url.path.startswith('/reviews') %}active{% endif %}" href="/reviews">Reviews</a>
+        <a class="nav-link {% if request.url.path.startswith('/reports') %}active{% endif %}" href="/reports">Reports</a>
+        {% if user.role == 'admin' %}
+        <a class="nav-link {% if request.url.path.startswith('/admin') %}active{% endif %}" href="/admin">Admin</a>
+        {% endif %}
+      </nav>
+      <div class="flex items-center gap-3 text-sm">
+        <span class="text-gray-400">{{ user.username }} <span class="text-sea-600">({{ user.role }})</span></span>
+        <a href="/logout" class="text-gray-300 hover:text-white">Logout</a>
+      </div>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    {% if request.query_params.get('msg') %}
+    <div class="mb-4 rounded-lg border border-sea-700 bg-sea-700/20 px-4 py-2 text-sm text-sea-100">{{ request.query_params.get('msg') }}</div>
+    {% endif %}
+    {% if request.query_params.get('error') %}
+    <div class="mb-4 rounded-lg border border-red-800 bg-red-900/30 px-4 py-2 text-sm text-red-200">{{ request.query_params.get('error') }}</div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="border-t border-gray-800 mt-10 py-6 text-center text-xs text-gray-500">
+    CloudAudit360 — Collect → Assess → Normalize → Map → Score → Register → Report
+  </footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

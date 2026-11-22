@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Risk Register — CloudAudit360{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Risk Register</h1>
+<form method="get" class="card p-4 mb-4 grid md:grid-cols-4 gap-3 text-sm">
+  <div>
+    <label class="text-xs text-gray-400">Rating</label>
+    <select name="rating" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2">
+      <option value="">All</option>
+      {% for r in ['Critical','High','Medium','Low'] %}
+      <option value="{{ r }}" {% if rating==r %}selected{% endif %}>{{ r }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="text-xs text-gray-400">Status</label>
+    <select name="status" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2">
+      <option value="">All</option>
+      {% for s in ['open','in_progress','mitigated','accepted','closed'] %}
+      <option value="{{ s }}" {% if status==s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="text-xs text-gray-400">Owner</label>
+    <input name="owner" value="{{ owner }}" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2" />
+  </div>
+  <div class="flex items-end"><button class="w-full rounded bg-sea-600 hover:bg-sea-500 py-2">Filter</button></div>
+</form>
+
+<div class="card overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead class="text-left text-gray-400 border-b border-gray-800">
+      <tr>
+        <th class="p-3">Rating</th><th class="p-3">L×I</th><th class="p-3">Title</th>
+        <th class="p-3">Owner</th><th class="p-3">Treatment</th><th class="p-3">Residual</th><th class="p-3">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in risks %}
+      <tr class="border-b border-gray-800/60 hover:bg-ink-800/40">
+        <td class="p-3"><span class="badge-{{ r.rating|lower }} px-2 py-0.5 rounded text-xs">{{ r.rating }}</span></td>
+        <td class="p-3 font-mono">{{ r.likelihood }}×{{ r.impact }}={{ r.inherent_score }}</td>
+        <td class="p-3"><a class="text-sea-600 hover:underline" href="/risks/{{ r.id }}">{{ r.title }}</a></td>
+        <td class="p-3">{{ r.owner or '—' }}</td>
+        <td class="p-3">{{ r.treatment }}</td>
+        <td class="p-3">{{ r.residual_score }} ({{ r.residual_rating }})</td>
+        <td class="p-3">{{ r.status }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="p-4 text-gray-500">No risks.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

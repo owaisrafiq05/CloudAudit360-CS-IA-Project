@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Risk {{ risk.id }} — CloudAudit360{% endblock %}
+{% block content %}
+<a href="/risks" class="text-sm text-gray-400 hover:text-sea-600">← Risk register</a>
+<h1 class="text-2xl font-semibold mt-2 mb-2">{{ risk.title }}</h1>
+<div class="flex flex-wrap gap-2 mb-4 text-sm">
+  <span class="badge-{{ risk.rating|lower }} px-2 py-0.5 rounded">{{ risk.rating }}</span>
+  <span class="px-2 py-0.5 rounded bg-ink-800 font-mono">{{ risk.inherent_score }}</span>
+  <span class="px-2 py-0.5 rounded bg-ink-800">{{ risk.status }}</span>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-4 mb-6">
+  <div class="card p-4 text-sm space-y-2">
+    <h2 class="font-medium">Score breakdown</h2>
+    <p><span class="text-gray-400">Likelihood:</span> {{ risk.likelihood }} — {{ risk.likelihood_reason }}</p>
+    <p><span class="text-gray-400">Impact:</span> {{ risk.impact }} — {{ risk.impact_reason }}</p>
+    <p><span class="text-gray-400">Inherent:</span> {{ risk.likelihood }} × {{ risk.impact }} = {{ risk.inherent_score }} ({{ risk.rating }})</p>
+    <p><span class="text-gray-400">Residual:</span> {{ risk.residual_score }} ({{ risk.residual_rating }})</p>
+    <p class="font-mono text-xs text-gray-400">{{ risk.finding_key }}</p>
+  </div>
+  <div class="card p-4">
+    <h2 class="font-medium mb-3">Treatment</h2>
+    <form method="post" action="/risks/{{ risk.id }}/update" class="space-y-3 text-sm">
+      <div>
+        <label class="text-xs text-gray-400">Owner</label>
+        <input name="owner" value="{{ risk.owner or '' }}" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2" />
+      </div>
+      <div>
+        <label class="text-xs text-gray-400">Treatment</label>
+        <select name="treatment" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2">
+          {% for t in ['none','mitigate','accept','transfer','avoid'] %}
+          <option value="{{ t }}" {% if risk.treatment==t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-gray-400">Status</label>
+        <select name="status" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2">
+          {% for s in ['open','in_progress','mitigated','accepted','closed'] %}
+          <option value="{{ s }}" {% if risk.status==s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-gray-400">Note</label>
+        <textarea name="treatment_note" rows="3" class="w-full mt-1 rounded bg-ink-950 border border-gray-700 px-2 py-2">{{ risk.treatment_note or '' }}</textarea>
+      </div>
+      <button class="rounded bg-sea-600 hover:bg-sea-500 px-4 py-2 font-medium">Save</button>
+    </form>
+  </div>
+</div>
+
+<div class="card p-4">
+  <h2 class="font-medium mb-3">Exceptions</h2>
+  <ul class="space-y-2 text-sm mb-4">
+    {% for e in exceptions %}
+    <li class="border border-gray-800 rounded p-3 flex items-start justify-between gap-3">
+      <div>
+        <div class="text-gray-300">{{ e.justification }}</div>
+        <div class="text-xs text-gray-500 mt-1">status={{ e.status }} · approved_by={{ e.approved_by or 'pending' }} · expires={{ e.expires_at or 'n/a' }}</div>
+      </div>
+      {% if user.role == 'admin' and not e.approved_by and e.status == 'active' %}
+      <form method="post" action="/exceptions/{{ e.id }}/approve">
+        <button class="text-xs rounded bg-sea-700 px-3 py-1">Approve</button>
+      </form>
+      {% endif %}
+    </li>
+    {% else %}
+    <li class="text-gray-500">No exceptions.</li>
+    {% endfor %}
+  </ul>
+  <form method="post" action="/risks/{{ risk.id }}/exceptions" class="grid md:grid-cols-3 gap-3 text-sm">
+    <input name="justification" placeholder="Justification" required class="md:col-span-2 rounded bg-ink-950 border border-gray-700 px-2 py-2" />
+    <input type="datetime-local" name="expires_at" class="rounded bg-ink-950 border border-gray-700 px-2 py-2" />
+    <button class="md:col-span-3 rounded bg-ink-700 hover:bg-ink-800 px-4 py-2 w-fit">Request exception</button>
+  </form>
+</div>
+{% endblock %}
