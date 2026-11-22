@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CloudAudit360 Technical Report — Scan {{ scan.id }}</title>
+  <style>
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #111; margin: 36px; font-size: 13px; }
+    h1 { border-bottom: 3px solid #0f766e; }
+    h2 { color: #115e59; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 11px; }
+    th, td { border: 1px solid #ddd; padding: 5px 7px; text-align: left; vertical-align: top; }
+    th { background: #ecfeff; }
+    pre { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; overflow: auto; font-size: 10px; }
+    code { font-family: Menlo, monospace; }
+  </style>
+</head>
+<body>
+  <h1>CloudAudit360 — Technical Report</h1>
+  <p>Scan #{{ scan.id }} · {{ scan.environment }} · {{ scan.label }} · Generated {{ generated_at }}</p>
+
+  <h2>Findings by Service / Severity</h2>
+  <table>
+    <tr><th>Status</th><th>Severity</th><th>Source</th><th>Check ID</th><th>Title</th><th>Remediation</th></tr>
+    {% for f in findings %}
+    <tr>
+      <td>{{ f.status }}</td>
+      <td>{{ f.severity }}</td>
+      <td>{{ f.source }}</td>
+      <td><code>{{ f.check_id }}</code></td>
+      <td>{{ f.title }}</td>
+      <td>{{ f.remediation }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h2>Evidence Samples</h2>
+  {% for f in findings if f.status == 'FAIL' %}
+  <h3>{{ f.check_id }} — {{ f.title }}</h3>
+  <pre>{{ f.evidence_json | tojson(indent=2) }}</pre>
+  {% endfor %}
+
+  {% if comparison %}
+  <h2>Before / After Comparison</h2>
+  <p>Baseline scan #{{ comparison.scan_a }} → current #{{ comparison.scan_b }}</p>
+  <h3>Fixed</h3>
+  <ul>{% for i in comparison.fixed %}<li><code>{{ i.check_id }}</code> — {{ i.title }}</li>{% else %}<li>None</li>{% endfor %}</ul>
+  <h3>New</h3>
+  <ul>{% for i in comparison.new %}<li><code>{{ i.check_id }}</code> — {{ i.title }}</li>{% else %}<li>None</li>{% endfor %}</ul>
+  {% endif %}
+</body>
+</html>

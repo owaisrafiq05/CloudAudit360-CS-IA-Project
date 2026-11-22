@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CloudAudit360 Audit Report — Scan {{ scan.id }}</title>
+  <style>
+    body { font-family: Georgia, serif; color: #111; margin: 40px; line-height: 1.45; }
+    h1,h2,h3 { font-family: 'Helvetica Neue', Arial, sans-serif; }
+    h1 { border-bottom: 3px solid #0f766e; padding-bottom: 8px; }
+    h2 { margin-top: 28px; color: #115e59; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12px; }
+    th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; vertical-align: top; }
+    th { background: #f0fdfa; }
+    .meta { color: #555; font-size: 13px; }
+    .score { font-size: 22px; font-weight: bold; color: #0f766e; }
+    .cover { margin-bottom: 32px; }
+    code { font-family: Menlo, monospace; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <h1>CloudAudit360 — Audit Report</h1>
+    <p class="meta">Generated {{ generated_at }} · Scan #{{ scan.id }} ({{ scan.environment }}) · {{ scan.label }}</p>
+    <p>This report documents the Collect → Assess → Map → Score → Register pipeline results for assurance and audit evidence.</p>
+  </section>
+
+  <h2>1. Scope</h2>
+  <ul>
+    <li>Assets assessed: {{ assets|length }}</li>
+    <li>Regions: {{ regions|join(', ') }}</li>
+    <li>Frameworks: {{ frameworks|join(', ') }}</li>
+    <li>Findings: {{ findings|length }} (FAIL {{ fail_count }}, PASS {{ pass_count }})</li>
+  </ul>
+
+  <h2>2. Methodology</h2>
+  <p><strong>Compliance scoring:</strong> Per control, FAIL if any mapped check fails (unless covered by an approved active exception); PASS if all mapped checks pass; NOT_ASSESSED if no mapped check ran. Framework score = PASS / (PASS + FAIL + EXCEPTION) × 100. Coverage excludes NOT_ASSESSED from the score denominator.</p>
+  <p><strong>Risk scoring (5×5):</strong> Likelihood from asset exposure (public=5, internal=3, private=2) with +1 for high/critical severity (capped at 5). Impact = round((severity_value + criticality_value) / 2). Inherent score = Likelihood × Impact. Bands: 1–4 Low, 5–9 Medium, 10–16 High, 17–25 Critical.</p>
+
+  <h2>3. Executive Summary</h2>
+  <p>Environment <strong>{{ scan.environment }}</strong> completed with status <strong>{{ scan.status }}</strong>.
+  {% if comparison %}Compared to prior scan #{{ comparison.scan_a }}: {{ comparison.fixed|length }} fixed, {{ comparison.new|length }} new findings.{% endif %}
+  </p>
+  <table>
+    <tr><th>Framework</th><th>Score</th><th>Coverage</th><th>PASS</th><th>FAIL</th><th>EXCEPTION</th></tr>
+    {% for s in scores %}
+    <tr>
+      <td>{{ s.framework }}</td>
+      <td class="score">{{ '%.1f'|format(s.score) }}%</td>
+      <td>{{ '%.1f'|format(s.coverage) }}%</td>
+      <td>{{ s.pass_count }}</td>
+      <td>{{ s.fail_count }}</td>
+      <td>{{ s.exception_count }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h2>4. Control Status</h2>
+  <table>
+    <tr><th>Framework</th><th>Ref</th><th>Title</th><th>Status</th><th>Failing</th></tr>
+    {% for result, ctrl in control_rows %}
+    <tr>
+      <td>{{ ctrl.framework }}</td>
+      <td>{{ ctrl.control_ref }}</td>
+      <td>{{ ctrl.title }}</td>
+      <td>{{ result.status }}</td>
+      <td>{{ result.failing_finding_count }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h2>5. Findings with Risk Context</h2>
+  <table>
+    <tr><th>Status</th><th>Severity</th><th>Check</th><th>Title</th><th>Remediation</th></tr>
+    {% for f in findings %}
+    <tr>
+      <td>{{ f.status }}</td>
+      <td>{{ f.severity }}</td>
+      <td><code>{{ f.check_id }}</code></td>
+      <td>{{ f.title }}</td>
+      <td>{{ f.remediation }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h2>6. Risk Register Extract</h2>
+  <table>
+    <tr><th>Rating</th><th>Score</th><th>Title</th><th>Treatment</th><th>Residual</th><th>Status</th><th>Owner</th></tr>
+    {% for r in risks %}
+    <tr>
+      <td>{{ r.rating }}</td>
+      <td>{{ r.inherent_score }}</td>
+      <td>{{ r.title }}</td>
+      <td>{{ r.treatment }}</td>
+      <td>{{ r.residual_score }} ({{ r.residual_rating }})</td>
+      <td>{{ r.status }}</td>
+      <td>{{ r.owner or '—' }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h2>7. Exceptions</h2>
+  <table>
+    <tr><th>ID</th><th>Risk</th><th>Status</th><th>Approved by</th><th>Expires</th><th>Justification</th></tr>
+    {% for e in exceptions %}
+    <tr>
+      <td>{{ e.id }}</td><td>{{ e.risk_id }}</td><td>{{ e.status }}</td>
+      <td>{{ e.approved_by or 'pending' }}</td><td>{{ e.expires_at }}</td><td>{{ e.justification }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6">No exceptions recorded.</td></tr>
+    {% endfor %}
+  </table>
+
+  <h2>8. Evidence Index</h2>
+  <table>
+    <tr><th>ID</th><th>Kind</th><th>Path</th><th>SHA-256</th></tr>
+    {% for e in evidence %}
+    <tr>
+      <td>{{ e.id }}</td>
+      <td>{{ e.kind }}</td>
+      <td><code>{{ e.path_or_json }}</code></td>
+      <td><code>{{ e.sha256 }}</code></td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h2>9. Recommendations</h2>
+  <ol>
+    <li>Prioritize Critical/High residual risks with owners and due dates.</li>
+    <li>Remediate FAIL controls mapped to CIS/ISO/NIST before the next assurance cycle.</li>
+    <li>Retain evidence hashes with reports for chain-of-custody.</li>
+    <li>Re-scan after hardening and attach the scan comparison delta to the audit package.</li>
+  </ol>
+
+  {% if comparison %}
+  <h2>10. Scan-over-Scan Improvement</h2>
+  <p>Fixed: {{ comparison.fixed|length }} · New: {{ comparison.new|length }} · Unchanged: {{ comparison.unchanged|length }}</p>
+  <table>
+    <tr><th>Framework</th><th>Prior</th><th>Current</th><th>Delta</th></tr>
+    {% for fw, d in comparison.score_deltas.items() %}
+    <tr><td>{{ fw }}</td><td>{{ d.a }}%</td><td>{{ d.b }}%</td><td>{{ '%+.1f'|format(d.delta) }}</td></tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</body>
+</html>
